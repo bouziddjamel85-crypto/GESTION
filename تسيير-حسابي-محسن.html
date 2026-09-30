@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestion de mon compte</title>
+<style>
+:root{
+  --bg:#EFF3EE; --panel:#FFFFFF; --ink:#1B231D; --muted:#5B6B60;
+  --green:#1F3D2B; --green-2:#2E5A3E; --gold:#B98A1F; --red:#A6402F;
+  --line:#DCE4DE; --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg)
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><circle cx="10" cy="10" r="1.6" fill="%23C9D4CB"/><circle cx="60" cy="40" r="1.6" fill="%23C9D4CB"/><circle cx="100" cy="90" r="1.6" fill="%23C9D4CB"/><circle cx="30" cy="80" r="1.6" fill="%23C9D4CB"/></svg>');
+  background-attachment:fixed;color:var(--ink);
+  font-family:"Segoe UI","Tahoma",Arial,sans-serif;}
+header{position:relative;overflow:hidden;background:var(--green);color:#F4F1E8;padding:28px 20px 34px;
+  border-radius:0 0 24px 24px;}
+header::before{content:"";position:absolute;inset:0;opacity:.16;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 88% 12%, #F4E8B8 0 26px, transparent 27px),
+    radial-gradient(circle at 78% 32%, #F4E8B8 0 14px, transparent 15px),
+    radial-gradient(circle at 8% 85%, #F4E8B8 0 34px, transparent 35px),
+    radial-gradient(circle at 92% 88%, #F4E8B8 0 18px, transparent 19px);
+}
+header .wrap{position:relative;z-index:1}
+.balance-label{font-size:14px;color:#CBD9CE;margin:0 0 4px}
+.balance-num{font-size:44px;font-weight:700;letter-spacing:-1px;margin:0}
+.balance-num span{font-size:20px;font-weight:400;color:#CBD9CE}
+.benefit-box{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;margin-top:14px}
+.benefit-icon{font-size:22px}
+.benefit-label{margin:0;font-size:12px;color:#CBD9CE}
+.benefit-num{margin:2px 0 0;font-size:18px;font-weight:600;color:#F4F1E8}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+.tabs{display:flex;gap:8px;margin:18px 0}
+.tab{flex:1;text-align:center;padding:10px;border-radius:10px;cursor:pointer;
+  background:var(--panel);color:var(--muted);border:1px solid var(--line);font-size:15px}
+.tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 12px;font-size:16px;color:var(--green);display:flex;align-items:center;justify-content:space-between}
+.row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+input,select{flex:1;min-width:100px;padding:9px 10px;border:1px solid var(--line);
+  border-radius:8px;font-size:14px;background:#FBFCFB;color:var(--ink);font-family:inherit}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;padding:9px;border:none;background:#FBFCFB;color:var(--muted);cursor:pointer;font-family:inherit}
+.seg button.on.in{background:var(--green-2);color:#fff}
+.seg button.on.out{background:var(--red);color:#fff}
+.btn{padding:10px 16px;border:none;border-radius:8px;background:var(--green);
+  color:#fff;cursor:pointer;font-size:14px;font-family:inherit}
+.btn.secondary{background:transparent;color:var(--green);border:1px solid var(--green)}
+.btn.small{padding:6px 10px;font-size:12px}
+ul.list{list-style:none;margin:0;padding:0}
+ul.list li{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 2px;border-bottom:1px solid var(--line);gap:8px}
+ul.list li:last-child{border-bottom:none}
+.desc{font-size:14px}
+.desc small{display:block;color:var(--muted);font-size:12px}
+.amt.in{color:var(--green-2);font-weight:600}
+.amt.out{color:var(--red);font-weight:600}
+.amt.bought{text-decoration:line-through;color:var(--muted)}
+.del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px}
+.foot{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);
+  padding-top:8px;margin-top:4px;border-top:1px dashed var(--line)}
+.backup{display:flex;gap:8px;margin:6px 0 28px}
+.check{width:18px;height:18px;flex-shrink:0;cursor:pointer}
+.tag{font-size:11px;background:#EFF3EE;color:var(--green-2);padding:2px 7px;border-radius:6px}
+.field-label{display:block;font-size:12px;color:var(--muted);margin:0 0 4px 2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="balance-label">RESTE</p>
+    <p class="balance-num" id="balanceNum">0 <span>DA</span></p>
+    <div class="benefit-box">
+      <span class="benefit-icon">📊</span>
+      <div>
+        <p class="benefit-label">Total du bénéfice de tous les achats</p>
+        <p class="benefit-num" id="benefitNum">0 DA</p>
+      </div>
+    </div>
+    <div class="benefit-box">
+      <span class="benefit-icon">🏦</span>
+      <div>
+        <p class="benefit-label">Moi</p>
+        <p class="benefit-num" id="oldBalanceNum">0 DA</p>
+      </div>
+    </div>
+    <div class="benefit-box">
+      <span class="benefit-icon">🧮</span>
+      <div>
+        <p class="benefit-label">PRIX TOTAL</p>
+        <p class="benefit-num" id="totalPriceNum">0 DA</p>
+      </div>
+    </div>
+    <div class="benefit-box">
+      <span class="benefit-icon">➕</span>
+      <div>
+        <p class="benefit-label">TOTAL</p>
+        <p class="benefit-num" id="totalAllNum">0 DA</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="account">VERSEMENT</div>
+    <div class="tab" data-tab="purchases">Achats</div>
+  </div>
+
+  <!-- ACCOUNT TAB -->
+  <div id="account">
+    <div class="card">
+      <h3>Solde de départ <span class="tag" id="sbTotal">0 DA</span></h3>
+      <div class="row">
+        <input type="number" id="sbAmount" placeholder="Montant">
+        <input type="date" id="sbDate">
+      </div>
+      <button class="btn" onclick="addStartBalance()">Ajouter l'opération</button>
+      <ul class="list" id="sbList" style="margin-top:10px"></ul>
+    </div>
+
+    <div class="card">
+      <h3>Nouvelle opération</h3>
+      <div class="row">
+        <div class="seg" style="flex:1">
+          <button class="on in" id="segIn" onclick="setType('in')">Dépôt +</button>
+          <button id="segOut" onclick="setType('out')">Retrait -</button>
+        </div>
+      </div>
+      <div class="row">
+        <input type="text" id="txDesc" placeholder="Description (ex: salaire, facture...)">
+      </div>
+      <div class="row">
+        <input type="number" id="txAmount" placeholder="Montant">
+        <input type="date" id="txDate">
+      </div>
+      <button class="btn" onclick="addTx()">Ajouter l'opération</button>
+    </div>
+
+    <div class="card">
+      <h3>Historique des opérations</h3>
+      <ul class="list" id="txList"></ul>
+    </div>
+  </div>
+
+  <!-- PURCHASES TAB -->
+  <div id="purchases" style="display:none">
+    <div class="card">
+      <h3>Ajouter un achat</h3>
+      <div class="row">
+        <div style="flex:1;min-width:100px">
+          <label class="field-label">Nom du produit</label>
+          <input type="text" id="pName" placeholder="ex: chaussures de sport">
+        </div>
+        <div style="flex:1;min-width:100px">
+          <label class="field-label">Prix</label>
+          <input type="number" id="pPrice" placeholder="en dinars">
+        </div>
+      </div>
+      <div class="row">
+        <div style="flex:1">
+          <label class="field-label">Bénéfice</label>
+          <input type="number" id="pCat" placeholder="Valeur du bénéfice en dinars">
+        </div>
+        <div style="flex:1;min-width:100px">
+          <label class="field-label">Date</label>
+          <input type="date" id="pDate">
+        </div>
+      </div>
+      <div class="row">
+        <div style="flex:1;min-width:100px">
+          <label class="field-label">Quantité</label>
+          <input type="number" id="pQty" placeholder="1" min="1" value="1">
+        </div>
+      </div>
+      <button class="btn" onclick="addPurchase()">Ajouter à la liste</button>
+    </div>
+
+    <div class="card">
+      <h3>Liste des achats <span class="tag" id="pCount">🧾 0</span></h3>
+      <ul class="list" id="pList"></ul>
+      <div class="foot">
+        <span id="pPlannedTotal"></span>
+        <span id="pBoughtTotal"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>QUANTITÉ <span class="tag" id="qtyTotal">0</span></h3>
+      <ul class="list" id="qtyList"></ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sauvegarde <span class="tag" id="saveStatus">✓ Données locales</span></h3>
+    <p style="font-size:13px;color:var(--muted);margin-top:0">
+      L'application enregistre vos données automatiquement dans ce navigateur.
+      Exportez une copie de temps en temps pour la garder en sécurité ou la transférer vers un autre appareil.
+    </p>
+    <div class="backup">
+      <button class="btn secondary" onclick="exportData()">⬇ Exporter une copie</button>
+      <label class="btn secondary" style="text-align:center;cursor:pointer">
+        ⬆ Importer une copie
+        <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+      </label>
+    </div>
+  </div>
+</div>
+
+<script>
+let data = { startBalance:0, startBalances:[], transactions:[], purchases:[] };
+let currentType = 'in';
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('account').style.display = t.dataset.tab==='account'?'block':'none';
+  document.getElementById('purchases').style.display = t.dataset.tab==='purchases'?'block':'none';
+}));
+
+document.getElementById('txDate').valueAsDate = new Date();
+document.getElementById('pDate').valueAsDate = new Date();
+document.getElementById('sbDate').valueAsDate = new Date();
+
+function setType(t){
+  currentType = t;
+  document.getElementById('segIn').className = t==='in' ? 'on in' : '';
+  document.getElementById('segOut').className = t==='out' ? 'on out' : '';
+}
+
+function addStartBalance(){
+  const v = parseFloat(document.getElementById('sbAmount').value);
+  const dateVal = document.getElementById('sbDate').value;
+  if(isNaN(v)){ alert('Entrez un nombre valide'); return; }
+  data.startBalances.unshift({id:Date.now(), amount:v, date:dateVal});
+  document.getElementById('sbAmount').value='';
+  document.getElementById('sbDate').valueAsDate = new Date();
+  saveLocal();
+  render();
+}
+
+function delStartBalance(id){
+  data.startBalances = data.startBalances.filter(s=>s.id!==id);
+  saveLocal();
+  render();
+}
+
+function addTx(){
+  const desc = document.getElementById('txDesc').value.trim();
+  const amount = parseFloat(document.getElementById('txAmount').value);
+  const dateVal = document.getElementById('txDate').value;
+  if(!desc || isNaN(amount) || amount<=0){ alert('Remplissez correctement la description et le montant'); return; }
+  data.transactions.unshift({id:Date.now(), desc, amount, type:currentType, date:dateVal});
+  document.getElementById('txDesc').value='';
+  document.getElementById('txAmount').value='';
+  saveLocal();
+  render();
+}
+
+function delTx(id){
+  data.transactions = data.transactions.filter(t=>t.id!==id);
+  saveLocal();
+  render();
+}
+
+function addPurchase(){
+  const name = document.getElementById('pName').value.trim();
+  const price = parseFloat(document.getElementById('pPrice').value);
+  const cat = parseFloat(document.getElementById('pCat').value) || 0;
+  const dateVal = document.getElementById('pDate').value;
+  const qty = parseInt(document.getElementById('pQty').value) || 1;
+  if(!name || isNaN(price) || price<=0){ alert('Remplissez correctement le nom et le prix'); return; }
+  data.purchases.unshift({id:Date.now(), name, price, cat, date:dateVal, qty, bought:false});
+  document.getElementById('pName').value='';
+  document.getElementById('pPrice').value='';
+  document.getElementById('pCat').value='';
+  document.getElementById('pQty').value='1';
+  document.getElementById('pDate').valueAsDate = new Date();
+  saveLocal();
+  render();
+}
+
+function toggleBought(id){
+  const p = data.purchases.find(x=>x.id===id);
+  if(!p) return;
+  p.bought = !p.bought;
+  saveLocal();
+  render();
+}
+
+function delPurchase(id){
+  data.purchases = data.purchases.filter(p=>p.id!==id);
+  saveLocal();
+  render();
+}
+
+function fmt(n){ return n.toLocaleString('fr-FR'); }
+
+const STORAGE_KEY = 'gestion-compte-data-v2';
+
+function saveLocal(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
+  } catch(e) {
+    console.warn('Stockage local indisponible', e);
+    return false;
+  }
+}
+
+function normalizeData(obj){
+  const base = {startBalance:0, startBalances:[], transactions:[], purchases:[]};
+  const d = Object.assign(base, obj || {});
+  d.startBalances = Array.isArray(d.startBalances) ? d.startBalances : [];
+  d.transactions = Array.isArray(d.transactions) ? d.transactions : [];
+  d.purchases = Array.isArray(d.purchases) ? d.purchases : [];
+  return d;
+}
+
+function loadLocal(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) data = normalizeData(JSON.parse(raw));
+    if((!data.startBalances.length) && data.startBalance){
+      data.startBalances = [{id:Date.now(), amount:data.startBalance, date:''}];
+    }
+  }catch(e){
+    console.warn('Lecture du stockage impossible', e);
+    data = normalizeData({});
+  }
+}
+
+function render(){
+  const boughtTotal = data.purchases.filter(p=>p.bought).reduce((s,p)=>s+p.price*(p.qty||1),0);
+  const startTotal = data.startBalances.reduce((s,x)=>s+x.amount,0);
+  const balance = startTotal - boughtTotal;
+  document.getElementById('balanceNum').innerHTML = fmt(balance)+' <span>DA</span>';
+  const totalBenefit = data.purchases.reduce((s,p)=>s+(p.cat||0)*(p.qty||1),0);
+  const benefitEl = document.getElementById('benefitNum');
+  benefitEl.textContent = fmt(totalBenefit) + ' DA';
+  const oldBalance = data.transactions.reduce((s,t)=> s + (t.type==='in' ? t.amount : -t.amount), 0);
+  document.getElementById('oldBalanceNum').textContent = fmt(oldBalance) + ' DA';
+  const totalPrice = data.purchases.reduce((s,p)=>s+p.price*(p.qty||1),0);
+  document.getElementById('totalPriceNum').textContent = fmt(totalPrice) + ' DA';
+  document.getElementById('totalAllNum').textContent = fmt(totalBenefit + totalPrice) + ' DA';
+  document.getElementById('sbTotal').textContent = fmt(startTotal) + ' DA';
+  const sbList = document.getElementById('sbList');
+  sbList.innerHTML = data.startBalances.length ? '' : '<div class="empty">Aucune opération pour le moment</div>';
+  data.startBalances.forEach(s=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="desc">${fmt(s.amount)} DA<small>${s.date||''}</small></div>
+      <button class="del" onclick="delStartBalance(${s.id})">✕</button>`;
+    sbList.appendChild(li);
+  });
+
+  const txList = document.getElementById('txList');
+  txList.innerHTML = data.transactions.length ? '' : '<div class="empty">Aucune opération pour le moment</div>';
+  data.transactions.forEach(t=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="desc">${t.desc}<small>${t.date||''}</small></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="amt ${t.type}">${t.type==='in'?'+':'-'}${fmt(t.amount)}</span>
+        <button class="del" onclick="delTx(${t.id})">✕</button>
+      </div>`;
+    txList.appendChild(li);
+  });
+
+  document.getElementById('pCount').textContent = `🧾 ${data.purchases.length}`;
+  const pList = document.getElementById('pList');
+  pList.innerHTML = data.purchases.length ? '' : '<div class="empty">Aucun achat pour le moment</div>';
+  data.purchases.forEach(p=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" class="check" ${p.bought?'checked':''} onchange="toggleBought(${p.id})">
+        <div class="desc">${p.name}${p.qty>1?` <span class="tag">x${p.qty}</span>`:''}${p.date?`<small>${p.date}</small>`:''}${p.cat?`<small>Bénéfice : ${fmt(p.cat)} DA</small>`:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="amt ${p.bought?'bought':'out'}">${fmt(p.price*(p.qty||1))}</span>
+        <button class="del" onclick="delPurchase(${p.id})">✕</button>
+      </div>`;
+    pList.appendChild(li);
+  });
+  const planned = data.purchases.reduce((s,p)=>s+p.price*(p.qty||1),0);
+  document.getElementById('pPlannedTotal').textContent = `Total de la liste : ${fmt(planned)} DA`;
+  document.getElementById('pBoughtTotal').textContent = `Déjà acheté : ${fmt(boughtTotal)} DA`;
+
+  const groups = {};
+  data.purchases.forEach(p=>{ groups[p.price] = (groups[p.price]||0) + (p.qty||1); });
+  const totalQty = data.purchases.reduce((s,p)=>s+(p.qty||1),0);
+  document.getElementById('qtyTotal').textContent = totalQty;
+  const qtyList = document.getElementById('qtyList');
+  const prices = Object.keys(groups);
+  qtyList.innerHTML = prices.length ? '' : '<div class="empty">Aucun achat pour le moment</div>';
+  prices.sort((a,b)=>b-a).forEach(price=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="desc">${fmt(price)} DA</div><span class="tag">x${groups[price]}</span>`;
+    qtyList.appendChild(li);
+  });
+  const ok = saveLocal();
+  const status = document.getElementById('saveStatus');
+  if(status) status.textContent = ok ? '✓ Données enregistrées' : '⚠ Stockage indisponible';
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'copie-mon-compte-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const loaded = JSON.parse(reader.result);
+      data = normalizeData(loaded);
+      if((!data.startBalances || !data.startBalances.length) && data.startBalance){
+        data.startBalances = [{id:Date.now(), amount:data.startBalance, date:''}];
+      }
+      render();
+      alert('Données importées avec succès');
+    }catch(err){ alert('Fichier invalide'); }
+  };
+  reader.readAsText(file);
+}
+
+loadLocal();
+render();
+</script>
+</body>
+</html>
